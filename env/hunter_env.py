@@ -90,11 +90,14 @@ class HunterEnv:
         reward = 0
 
         # perform the action
-        if energy >= self.energy_to_reproduce + 1:
-            # if action == 0 and self.energy >= self.energy_to_reproduce:
-            energy -= self.energy_to_reproduce
-            reward += .1
-            reproduce = True
+        #if energy >= self.energy_to_reproduce + 1:
+        if action == 0:
+            if energy >= self.energy_to_reproduce+1:
+                energy -= self.energy_to_reproduce
+                reward += .2
+                reproduce = True
+            else:
+                reward -=.2
         if action == 1 and self.y < self.height - 2:
             self.y += 1
         if action == 2 and self.x < self.width - 2:
@@ -116,12 +119,12 @@ class HunterEnv:
             or energy <= 0
         )
 
-        if not self.done:
-            reward += 1
-        elif self.steps_beyond_done is None:
+        # if not self.done:
+        #     #reward += 1
+        if self.steps_beyond_done is None:
             # Hunter just died
             self.steps_beyond_done = 0
-            reward += 1.0
+            # reward += 1.0
         else:
             if self.steps_beyond_done == 0:
                 logger.warn(

@@ -125,6 +125,8 @@ class MultiPreyHunterEnv(MultiAgentEnv):
             if "prey" in i and amount_of_hunters_living > 0:
                 dist = find_closest(self.agents[self.index_map[i]].get_position(), hunter_loc)
             obs[i], rew[i], done[i], info[i] = self.agents[self.index_map[i]].step(action, dist)
+            if "prey" in i:
+                rew[i] =0
             if amount_of_hunters_living == 0:
                 done[i] = True
             if done[i]:
@@ -169,6 +171,8 @@ class MultiPreyHunterEnv(MultiAgentEnv):
                 done[id] = False
                 info[id] = {}
                 # print(obs)
+            if "hunter" in i:
+                rew[i] += amount_of_hunters_living
 
         """
         Check if there are still some hunters, if not all the preys need to be killed otherwise it creates an error.

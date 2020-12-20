@@ -106,7 +106,8 @@ class PreyEnv():
                     "True' -- any further steps are undefined behavior."
                 )
             self.steps_beyond_done += 1
-            reward = 0.0
+        #THis is to test something
+        reward = 0.0
 
         return np.array(self.state), reward, self.done, {"reproduce": reproduce}
 

@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     env_config = {
         'num_hunters': 1,
-        'num_preys': 1,
+        'num_preys': 3,
         'training': True,
         'hunters': {
             'start_amount': 1,
@@ -36,11 +36,11 @@ if __name__ == "__main__":
             'max_age': 20, },
         'preys': {
             'start_amount': 1,
-            'birth_rate': 5,
+            'birth_rate': 7,
             'max_age': 20},
         'sim': {
-            'width': 10,
-            'height': 10}
+            'width': 20,
+            'height': 20}
     }
     policy_config = {
         "hunter_policy_config": {
@@ -54,7 +54,7 @@ if __name__ == "__main__":
             ########################################
             # Parameters Agent
             ########################################
-            "lr": 4e-3,
+            "lr": 0.0005,
             # "lr": tune.grid_search([5e-3, 2e-3, 1e-3, 5e-4]),
             "gamma": 0.985,
             #"gamma": tune.grid_search([0.9983, 0.9985, 0.9986, 0.9987, 0.988, 0.989]),
@@ -67,7 +67,37 @@ if __name__ == "__main__":
             "dqn_model": {
                 "custom_model": "DQNHunterModel",
                 "custom_model_config": {
-                    "network_size": [32, 64, 32],
+                    "layers": [
+                        {
+                            "type": "linear",
+                            "input": 4,
+                            "output": 32
+                        },
+                        {
+                            "type": "relu"
+                        },
+                        {
+                            "type": "linear",
+                            "input": 32,
+                            "output": 64
+                        },
+                        {
+                            "type": "relu"
+                        },
+                        {
+                            "type": "linear",
+                            "input": 64,
+                            "output": 32
+                        },
+                        {
+                            "type": "relu"
+                        },
+                        {
+                            "type": "linear",
+                            "input": 32,
+                            "output": 5
+                        }, ],
+                    "network_size": [32, 64, 128, 64, 32],
                 },  # extra options to pass to your model
             },
         },
@@ -95,7 +125,8 @@ if __name__ == "__main__":
             "dqn_model": {
                 "custom_model": "DQNPreyModel",
                 "custom_model_config": {
-                    "network_size": [32, 64, 32],
+
+                    "network_size": [32, 64, 128, 64, 32],
                 },  # extra options to pass to your model
             },
         }
@@ -125,7 +156,7 @@ if __name__ == "__main__":
         DQNTrainer,
         # checkpoint_freq=10,
         checkpoint_at_end=True,
-        stop={"timesteps_total": 200000},
+        stop={"timesteps_total": 20000},
         config={
             "num_gpus": 0,
             "num_workers": 1,
@@ -136,10 +167,10 @@ if __name__ == "__main__":
             ########################################
             # Parameters Agent
             ########################################
-            "lr": 0.01,
-            # "lr": tune.grid_search([5e-3, 2e-3, 1e-3, 5e-4]),
-            #"gamma": 0.9985,
-            #"gamma": tune.grid_search([0.9983, 0.9985, 0.9986, 0.9987, 0.988, 0.989]),
+            # "lr": 0.001,
+            # #"lr": tune.grid_search([5e-3, 2e-3, 1e-3, 5e-4]),
+            # #"gamma": 0.989,
+            # "gamma": tune.grid_search([0.988, 0.989, 0.990, 0.992, 0.994, ]),
             "epsilon": 1,
             "epsilon_decay": 0.998,
             "epsilon_min": 0.01,

@@ -35,4 +35,5 @@ class DQNModel(nn.Module, TorchModelV2):
         
     @override(TorchModelV2)
     def forward(self, obs):
+        print("DQNMODEL IS DEPRACATED")
         return self.layers(obs)

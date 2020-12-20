@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     # Settings
     #folder = "/home/wouter/ray_results/DQNAlgorithm_2020-12-20_09-56-04/DQNAlgorithm_MultiHunterEnv-v0_93162_00000_0_2020-12-20_09-56-04"
-    folder = "/home/wouter/ray_results/DQNAlgorithm_2020-12-20_10-11-56/DQNAlgorithm_MultiHunterEnv-v0_ca096_00000_0_2020-12-20_10-11-56"
+    folder = "/home/wouter/ray_results/DQNAlgorithm_2020-12-20_13-45-51/DQNAlgorithm_MultiHunterEnv-v0_ac451_00000_0_2020-12-20_13-45-51"
     env_name = "MultiHunterEnv-v0"
     #checkpoint = 100
     checkpoint = 100
@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     env_config = {
         'num_hunters': 1,
-        'num_preys': 1,
+        'num_preys': 3,
         'training': False,
         'hunters': {
             'start_amount': 1,
@@ -52,11 +52,11 @@ if __name__ == "__main__":
             'max_age': 20, },
         'preys': {
             'start_amount': 1,
-            'birth_rate': 17,
+            'birth_rate': 7,
             'max_age': 20},
         'sim': {
-            'width': 10,
-            'height': 10}
+            'width': 20,
+            'height': 20}
     }
 
     # test_env = MultiPreyHunterEnv(env_config)
@@ -101,7 +101,7 @@ if __name__ == "__main__":
             "dqn_model": {
                 "custom_model": "DQNHunterModel",
                 "custom_model_config": {
-                    "network_size": [32, 64, 32],
+                    "network_size": [32, 64, 128, 64, 32],
                 },  # extra options to pass to your model
             },
         },
@@ -129,7 +129,7 @@ if __name__ == "__main__":
             "dqn_model": {
                 "custom_model": "DQNPreyModel",
                 "custom_model_config": {
-                    "network_size": [32, 64, 32],
+                    "network_size": [32, 64, 128, 64, 32],
                 },  # extra options to pass to your model
             },
         }
