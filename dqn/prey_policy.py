@@ -18,6 +18,10 @@ class DQNPreyPolicy(Policy):
         self.config = config
         self.action_shape = action_space.n
 
+        self.training = self.config['training']
+        print("prey policy training: ", self.training)
+
+
         # GPU settings
         self.use_cuda = torch.cuda.is_available()
         self.device = torch.device("cuda" if self.use_cuda else "cpu")
@@ -95,14 +99,19 @@ class DQNPreyPolicy(Policy):
         action_batch_t = torch.argmax(q_value_batch_t, axis=1)
 
         epsilon_log = []
-        for index in range(len(action_batch_t)):
-            self.epsilon *= self.epsilon_decay
-            if self.epsilon < self.epsilon_min:
-                self.epsilon = self.epsilon_min
-            epsilon_log.append(self.epsilon)
-            if np.random.random() < self.epsilon:
+        if self.training:
+            for index in range(len(action_batch_t)):
+                self.epsilon *= self.epsilon_decay
+                if self.epsilon < self.epsilon_min:
+                    self.epsilon = self.epsilon_min
+                epsilon_log.append(self.epsilon)
+                if np.random.random() < self.epsilon:
+                    action_batch_t[index] = random.randint(0, self.action_shape - 1)
+        else:
+            for index in range(len(action_batch_t)):
+                epsilon_log.append(self.epsilon)
                 action_batch_t[index] = random.randint(0, self.action_shape - 1)
-
+        
         action = action_batch_t.cpu().detach().tolist()
         return action, [], {"epsilon_log": epsilon_log}
 

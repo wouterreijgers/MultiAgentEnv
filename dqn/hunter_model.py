@@ -27,6 +27,7 @@ class DQNHunterModel(nn.Module, TorchModelV2):
         last_size = self.obs_space.shape[0]
         i = 0
         for layer_size in self.network_size:
+            print(layer_size)
             self.layers.add_module("linear_{}".format(i), nn.Linear(last_size, layer_size))
             self.layers.add_module("relu_{}".format(i), nn.ReLU())
             last_size = layer_size

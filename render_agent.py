@@ -26,9 +26,11 @@ def env_creator(env_config):
 if __name__ == "__main__":
 
     # Settings
-    folder = "/home/wouter/ray_results/DQNAlgorithm_2020-12-19_15-04-15/DQNAlgorithm_MultiHunterEnv-v0_75e3d_00000_0_2020-12-19_15-04-15"
+    #folder = "/home/wouter/ray_results/DQNAlgorithm_2020-12-20_09-56-04/DQNAlgorithm_MultiHunterEnv-v0_93162_00000_0_2020-12-20_09-56-04"
+    folder = "/home/wouter/ray_results/DQNAlgorithm_2020-12-20_10-11-56/DQNAlgorithm_MultiHunterEnv-v0_ca096_00000_0_2020-12-20_10-11-56"
     env_name = "MultiHunterEnv-v0"
-    checkpoint = 10
+    #checkpoint = 100
+    checkpoint = 100
     num_episodes = 1
 
     # Def env
@@ -40,21 +42,21 @@ if __name__ == "__main__":
     ModelCatalog.register_custom_model("DQNHunterModel", DQNHunterModel)
 
     env_config = {
-        'num_hunters': 20,
-        'num_preys': 100,
+        'num_hunters': 1,
+        'num_preys': 1,
         'training': False,
         'hunters': {
-            'start_amount': 20,
+            'start_amount': 1,
             'energy_to_reproduce': 30,
             'energy_per_prey_eaten': 10,
             'max_age': 20, },
         'preys': {
-            'start_amount': 100,
-            'birth_rate': 5,
+            'start_amount': 1,
+            'birth_rate': 17,
             'max_age': 20},
         'sim': {
-            'width': 200,
-            'height': 200}
+            'width': 10,
+            'height': 10}
     }
 
     # test_env = MultiPreyHunterEnv(env_config)
@@ -76,6 +78,7 @@ if __name__ == "__main__":
 
     policy_config = {
         "hunter_policy_config": {
+            "training": True,
             "num_gpus": 0,
             "num_workers": 1,
             "framework": "torch",
@@ -103,6 +106,7 @@ if __name__ == "__main__":
             },
         },
         "prey_policy_config": {
+            "training": False,
             "num_gpus": 0,
             "num_workers": 1,
             "framework": "torch",
@@ -154,7 +158,7 @@ if __name__ == "__main__":
                          test_env.observation_space_prey,
                          test_env.action_space_prey,
                          policy_config["prey_policy_config"])}
-
+    config["env_config"] = env_config
     config["multiagent"] = {
             "policy_mapping_fn": policy_mapping_fn,
             "policies": policies,
@@ -176,7 +180,7 @@ if __name__ == "__main__":
 
         while not done:
             step += 1
-            time.sleep(0.2)
+            time.sleep(2)
             test_env.render()
             #print(observation)
             action = {}
@@ -196,7 +200,7 @@ if __name__ == "__main__":
                         prey_reward += rew
             total_reward += hunter_reward + prey_reward
 
-            print(prey_reward)
+            #print(prey_reward)
 
             if dones['__all__']:
                 done = True

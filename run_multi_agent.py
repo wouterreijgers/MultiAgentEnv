@@ -26,24 +26,25 @@ if __name__ == "__main__":
     ModelCatalog.register_custom_model("DQNHunterModel", DQNHunterModel)
 
     env_config = {
-        'num_hunters': 20,
-        'num_preys': 100,
+        'num_hunters': 1,
+        'num_preys': 1,
         'training': True,
         'hunters': {
-            'start_amount': 20,
+            'start_amount': 1,
             'energy_to_reproduce': 30,
             'energy_per_prey_eaten': 10,
             'max_age': 20, },
         'preys': {
-            'start_amount': 100,
+            'start_amount': 1,
             'birth_rate': 5,
             'max_age': 20},
         'sim': {
-            'width': 200,
-            'height': 200}
+            'width': 10,
+            'height': 10}
     }
     policy_config = {
         "hunter_policy_config": {
+            "training": True,
             "num_gpus": 0,
             "num_workers": 1,
             "framework": "torch",
@@ -56,7 +57,7 @@ if __name__ == "__main__":
             "lr": 4e-3,
             # "lr": tune.grid_search([5e-3, 2e-3, 1e-3, 5e-4]),
             "gamma": 0.985,
-            # "gamma": tune.grid_search([0.983, 0.985, 0.986, 0.987, 0.988, 0.989]),
+            #"gamma": tune.grid_search([0.9983, 0.9985, 0.9986, 0.9987, 0.988, 0.989]),
             "epsilon": 1,
             "epsilon_decay": 0.99998,
             "epsilon_min": 0.01,
@@ -71,6 +72,7 @@ if __name__ == "__main__":
             },
         },
         "prey_policy_config": {
+            "training": False,
             "num_gpus": 0,
             "num_workers": 1,
             "framework": "torch",
@@ -83,7 +85,7 @@ if __name__ == "__main__":
             "lr": 4e-3,
             # "lr": tune.grid_search([5e-3, 2e-3, 1e-3, 5e-4]),
             "gamma": 0.985,
-            # "gamma": tune.grid_search([0.983, 0.985, 0.986, 0.987, 0.988, 0.989]),
+            #"gamma": tune.grid_search([0.9983, 0.9985, 0.9986, 0.9987, 0.988, 0.989]),
             "epsilon": 1,
             "epsilon_decay": 0.99998,
             "epsilon_min": 0.01,
@@ -123,7 +125,7 @@ if __name__ == "__main__":
         DQNTrainer,
         # checkpoint_freq=10,
         checkpoint_at_end=True,
-        stop={"timesteps_total": 2000},
+        stop={"timesteps_total": 200000},
         config={
             "num_gpus": 0,
             "num_workers": 1,
@@ -134,27 +136,22 @@ if __name__ == "__main__":
             ########################################
             # Parameters Agent
             ########################################
-            "lr": 4e-3,
+            "lr": 0.01,
             # "lr": tune.grid_search([5e-3, 2e-3, 1e-3, 5e-4]),
-            "gamma": 0.985,
-            # "gamma": tune.grid_search([0.983, 0.985, 0.986, 0.987, 0.988, 0.989]),
+            #"gamma": 0.9985,
+            #"gamma": tune.grid_search([0.9983, 0.9985, 0.9986, 0.9987, 0.988, 0.989]),
             "epsilon": 1,
-            "epsilon_decay": 0.99998,
+            "epsilon_decay": 0.998,
             "epsilon_min": 0.01,
             "buffer_size": 20000,
-            "batch_size": 2000,
+            "batch_size": 20000,
             "env_config": env_config,
             "multiagent": {
                 "policy_mapping_fn": policy_mapping_fn,
                 "policies": policies,
                 "policies_to_train": policies
             },
-            # "dqn_model": {
-            #     "custom_model": "DQNModel",
-            #     "custom_model_config": {
-            #         "network_size": [32, 64, 32],
-            #     },  # extra options to pass to your model
-            # },
+
 
             ########################################
             # Envaluation parameters

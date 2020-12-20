@@ -56,7 +56,7 @@ class HunterEnv:
         high = np.array([self.max_age, self.max_energy, self.width, self.height], dtype=np.float32)
         self.action_space = spaces.Discrete(5)
         self.action_shape = self.action_space.n
-        self.observation_space = spaces.Box(np.array([0, 0, 0, 0]), high, dtype=np.float32)
+        self.observation_space = spaces.Box(np.array([0, 0, -self.width, -self.height]), high, dtype=np.float32)
         # print(self.observation_space)
         self.energy_to_reproduce = config['hunters']['energy_to_reproduce']
         self.energy_per_prey_eaten = config['hunters']['energy_per_prey_eaten']
@@ -93,21 +93,21 @@ class HunterEnv:
         if energy >= self.energy_to_reproduce + 1:
             # if action == 0 and self.energy >= self.energy_to_reproduce:
             energy -= self.energy_to_reproduce
-            reward += 2
+            reward += .1
             reproduce = True
-        if action == 1 and self.y < self.height - 1:
+        if action == 1 and self.y < self.height - 2:
             self.y += 1
-        if action == 2 and self.x < self.width - 1:
+        if action == 2 and self.x < self.width - 2:
             self.x += 1
         if action == 3 and self.y > 0:
             self.y -= 1
         if action == 4 and self.x > 0:
-            self.x += 1
+            self.x -= 1
 
         # find closest prey and 'eat' if close enough
         x_to_prey, y_to_prey = dist_to_prey[0], dist_to_prey[1]  # self.preys.get_rel_x_y([self.x, self.y])
-        if (abs(x_to_prey) + abs(y_to_prey)) < 3:
-            reward += 1
+        if (abs(x_to_prey) + abs(y_to_prey)) <=1:
+            reward += .1
             energy += self.energy_per_prey_eaten
 
         self.state = (age, energy, x_to_prey, y_to_prey)
@@ -119,7 +119,7 @@ class HunterEnv:
         if not self.done:
             reward += 1
         elif self.steps_beyond_done is None:
-            # Hunter jus died
+            # Hunter just died
             self.steps_beyond_done = 0
             reward += 1.0
         else:

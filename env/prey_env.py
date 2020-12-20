@@ -46,7 +46,7 @@ class PreyEnv():
         #print("birth_rate", self.birth_rate)
         high = np.array([self.max_age, self.width, self.height], dtype=np.float32)
         self.action_space = spaces.Discrete(4)
-        self.observation_space = spaces.Box(np.array([0, 0, 0]), high, dtype=np.float32)
+        self.observation_space = spaces.Box(np.array([0, -self.width, -self.height]), high, dtype=np.float32)
         # Prey specific
         self.age = 0
         self.x = random.randint(0, self.width)
@@ -75,20 +75,20 @@ class PreyEnv():
         if birth_probability <= self.birth_rate:
             #print("reproducs")
             reproduce = True
-        if action == 1 and self.y < self.height - 1:
+        if action == 1 and self.y < self.height - 2:
             self.y += 1
-        if action == 2 and self.x < self.width - 1:
+        if action == 2 and self.x < self.width - 2:
             self.x += 1
         if action == 3 and self.y > 0:
             self.y -= 1
         if action == 4 and self.x > 0:
-            self.x += 1
+            self.x -= 1
 
         # find closest prey and 'eat' if close enough
         x_to_hunter, y_to_hunter = dist_to_hunter[0], dist_to_hunter[1]  # self.preys.get_rel_x_y([self.x, self.y])
         self.state = (age, x_to_hunter, y_to_hunter)
         self.done = bool(
-            (abs(x_to_hunter) + abs(y_to_hunter)) < 3
+            (abs(x_to_hunter) + abs(y_to_hunter)) <= 1
             or age >= self.max_age
         )
 

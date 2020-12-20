@@ -23,8 +23,8 @@ def find_closest(my_pos, target_pos):
     dist_min = 400
     for x, y in target_pos:
         if abs(my_pos[0] - x) + abs(my_pos[1] - y) < dist_min:
-            dist_x = abs(my_pos[0] - x)
-            dist_y = abs(my_pos[1] - y)
+            dist_x = my_pos[0] - x
+            dist_y = my_pos[1] - y
             dist_min = abs(my_pos[0] - x) + abs(my_pos[1] - y)
 
     if dist_x > 200 or dist_y > 200:
@@ -55,7 +55,7 @@ class MultiPreyHunterEnv(MultiAgentEnv):
         self.hunter_wait = []
         self.prey_wait = []
         self.training = config['training']
-        print(self.training)
+        #print(self.training)
         # Build the visual simulation
         if not self.training:
             self.simulator = Simulation(config)
@@ -63,7 +63,7 @@ class MultiPreyHunterEnv(MultiAgentEnv):
             self.episode_end = False
 
     def reset(self):
-        print("reset")
+        #print("reset")
         self.dones = set()
         self.time = 0
         self.episode_end = False
@@ -76,7 +76,7 @@ class MultiPreyHunterEnv(MultiAgentEnv):
         return {i: self.agents[a].reset() for i, a in self.reset_index_map.items()}
 
     def step(self, action_dict):
-        print("step")
+        #print("step")
         self.time += 1
         self.action_dict_copy = action_dict.copy()
         # print(action_dict)
@@ -89,6 +89,7 @@ class MultiPreyHunterEnv(MultiAgentEnv):
         """
         Find the positions of every living agent, these are needed in order to calculate the closest prey/hunter
         """
+        #print(self.agents, self.index_map)
         for i, action in action_dict.items():
             if self.agents[self.index_map[i]].type == "hunter":
                 amount_of_hunters_total += 1
@@ -112,11 +113,11 @@ class MultiPreyHunterEnv(MultiAgentEnv):
         """
         Find the closest prey/hunter and perform the 'step' function in the HunterEnv and PreyEnv
         """
-        #print(action_dict)
+        # print(action_dict)
         obs, rew, done, info = {}, {}, {}, {}
         for i, action in action_dict.items():
 
-            dist = [200, 200]
+            dist = [self.config["sim"]["width"], self.config["sim"]["height"]]
 
             if "hunter" in i and amount_of_preys_living > 0:
                 dist = find_closest(self.agents[self.index_map[i]].get_position(), prey_loc)
@@ -141,25 +142,33 @@ class MultiPreyHunterEnv(MultiAgentEnv):
                     else:
                         self.agents.append(HunterEnv(self.config))
                     id = self.agents[len(self.agents) - 1].type + "_" + str(amount_of_hunters_total)
+                    n = 0
+                    while id in self.index_map:
+                        n += 1
+                        id = self.agents[len(self.agents) - 1].type + "_" + str(amount_of_preys_total + n)
+                    # if id in self.index_map:
+                    #     print('error!')
                     amount_of_hunters_total += 1
                 elif self.agents[self.index_map[i]].type == "prey":
-                    #print("new_prey", amount_of_preys_total)
+                    # print("new_prey", amount_of_preys_total)
                     if len(self.prey_wait) > 0:
                         self.agents.append(self.prey_wait.pop())
                     else:
                         self.agents.append(PreyEnv(self.config))
                     id = self.agents[len(self.agents) - 1].type + "_" + str(amount_of_preys_total)
-                    print(id)
-                    if id in self.index_map:
-                        print("ERROR ", id, " already in ", self.index_map)
+                    n = 0
+                    while id in self.index_map:
+                        n += 1
+                        id = self.agents[len(self.agents) - 1].type + "_" + str(amount_of_preys_total + n)
                     amount_of_preys_total += 1
+                if id in self.index_map:
+                    print("ERROR: ID ", id , " already in ", self.index_map)
                 self.index_map[id] = len(self.agents) - 1
                 obs[id] = self.agents[self.index_map[id]].reset()
                 rew[id] = 1
                 done[id] = False
                 info[id] = {}
-                #print(obs)
-
+                # print(obs)
 
         """
         Check if there are still some hunters, if not all the preys need to be killed otherwise it creates an error.
@@ -169,7 +178,7 @@ class MultiPreyHunterEnv(MultiAgentEnv):
                 agent.done = True
         done["__all__"] = amount_of_hunters_living == 0
         self.episode_end = done["__all__"]
-        #print(obs)
+        # print(obs)
         return obs, rew, done, info
 
     def render(self):

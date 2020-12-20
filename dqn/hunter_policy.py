@@ -18,6 +18,8 @@ class DQNHunterPolicy(Policy):
         self.config = config
         self.action_shape = action_space.n
 
+        self.training = self.config['training']
+        print("hunter policy training: ", self.training)
         # GPU settings
         self.use_cuda = torch.cuda.is_available()
         self.device = torch.device("cuda" if self.use_cuda else "cpu")
@@ -33,15 +35,15 @@ class DQNHunterPolicy(Policy):
         self.epsilon = self.config["epsilon"]
         self.epsilon_decay = self.config["epsilon_decay"]
         self.epsilon_min = self.config["epsilon_min"]
-        self.gamma = torch.tensor(self.config["gamma"]).to(self.device, non_blocking=True)
+        self.gamma = torch.tensor(self.config["gamma"]).type(self.dtype_f)
         self.batch_size = self.config["batch_size"]
 
         self.memory = deque(maxlen=self.config["buffer_size"])
         self.dqn_model = ModelCatalog.get_model_v2(
             obs_space=self.observation_space,
             action_space=self.action_space,
-            num_outputs=2,
-            name="DQNModel",
+            num_outputs=5,
+            name="DQNHunterModel",
             model_config=self.config["dqn_model"],
             framework="torch",
         ).to(self.device, non_blocking=True)
@@ -97,15 +99,22 @@ class DQNHunterPolicy(Policy):
         action_batch_t = torch.argmax(q_value_batch_t, axis=1)
 
         epsilon_log = []
-        for index in range(len(action_batch_t)):
-            self.epsilon *= self.epsilon_decay
-            if self.epsilon < self.epsilon_min:
-                self.epsilon = self.epsilon_min
-            epsilon_log.append(self.epsilon)
-            if np.random.random() < self.epsilon:
+        #print(self.epsilon)
+        if self.training:
+            for index in range(len(action_batch_t)):
+                self.epsilon *= self.epsilon_decay
+                if self.epsilon < self.epsilon_min:
+                    self.epsilon = self.epsilon_min
+                epsilon_log.append(self.epsilon)
+                if np.random.random() < self.epsilon:
+                    action_batch_t[index] = random.randint(0, self.action_shape - 1)
+        else:
+            for index in range(len(action_batch_t)):
+                epsilon_log.append(self.epsilon)
                 action_batch_t[index] = random.randint(0, self.action_shape - 1)
 
         action = action_batch_t.cpu().detach().tolist()
+
         return action, [], {"epsilon_log": epsilon_log}
 
     def learn_on_batch(self, samples):
@@ -125,23 +134,22 @@ class DQNHunterPolicy(Policy):
             self.dtype_l)
         dones_batch_t = torch.tensor(np.array(samples["dones"])).to(self.device, non_blocking=True).type(self.dtype_b)
 
-        # q_value_batch_t = self.dqn_model(obs_batch_t).gather(1, actions_batch_t.unsqueeze(-1)).squeeze(-1)
-        # next_q_value_batch_t = self.dqn_model(next_obs_batch_t).max(1)[0].detach()
+        q_value_batch_t = self.dqn_model(obs_batch_t).gather(1, actions_batch_t.unsqueeze(-1)).squeeze(-1)
+        next_q_value_batch_t = self.dqn_model(next_obs_batch_t).max(1)[0].detach()
 
-        # next_q_value_batch_t[dones_batch_t] = 0.0
-        # expected_q_value_batch_t = rewards_batch_t + next_q_value_batch_t * self.gamma
-        # expected_q_value_batch_t = expected_q_value_batch_t.detach()
-        #
-        # loss_t = self.MSE_loss_fn(q_value_batch_t, expected_q_value_batch_t)
+        next_q_value_batch_t[dones_batch_t] = 0.0
+        expected_q_value_batch_t = rewards_batch_t + next_q_value_batch_t * self.gamma
+        expected_q_value_batch_t = expected_q_value_batch_t.detach()
 
-        # TODO: Write learning function
+        loss_t = self.MSE_loss_fn(q_value_batch_t, expected_q_value_batch_t)
+
 
         # Update networks
-        # self.optimizer.zero_grad()
-        # loss_t.backward()
-        # self.optimizer.step()
-        #print("hunter_policy")
-
+        self.optimizer.zero_grad()
+        loss_t.backward()
+        self.optimizer.step()
+        print({"learner_stats": {"loss": "loss_t.cpu().item()", "epsilon": mean(epsilon_log),
+                                  "buffer_size": len(self.memory)}})
         return {"learner_stats": {"loss": "loss_t.cpu().item()", "epsilon": mean(epsilon_log),
                                   "buffer_size": len(self.memory)}}
 
