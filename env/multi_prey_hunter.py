@@ -73,6 +73,7 @@ class MultiPreyHunterEnv(MultiAgentEnv):
                 self.hunter_wait.append(temp)
             elif temp.type == "prey":
                 self.prey_wait.append(temp)
+        self.index_map = self.reset_index_map.copy()
         return {i: self.agents[a].reset() for i, a in self.reset_index_map.items()}
 
     def step(self, action_dict):
@@ -116,7 +117,6 @@ class MultiPreyHunterEnv(MultiAgentEnv):
         # print(action_dict)
         obs, rew, done, info = {}, {}, {}, {}
         for i, action in action_dict.items():
-
             dist = [self.config["sim"]["width"], self.config["sim"]["height"]]
 
             if "hunter" in i and amount_of_preys_living > 0:
@@ -148,8 +148,6 @@ class MultiPreyHunterEnv(MultiAgentEnv):
                     while id in self.index_map:
                         n += 1
                         id = self.agents[len(self.agents) - 1].type + "_" + str(amount_of_preys_total + n)
-                    # if id in self.index_map:
-                    #     print('error!')
                     amount_of_hunters_total += 1
                 elif self.agents[self.index_map[i]].type == "prey":
                     # print("new_prey", amount_of_preys_total)
@@ -172,7 +170,8 @@ class MultiPreyHunterEnv(MultiAgentEnv):
                 info[id] = {}
                 # print(obs)
             if "hunter" in i:
-                rew[i] += amount_of_hunters_living
+                rew[i] = amount_of_hunters_living
+
 
         """
         Check if there are still some hunters, if not all the preys need to be killed otherwise it creates an error.

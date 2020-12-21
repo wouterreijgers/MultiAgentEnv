@@ -27,6 +27,7 @@ class DQNHunterModel(nn.Module, TorchModelV2):
         linear_count = 0
         relu_count = 0
         for layer in self.layer_config:
+            print("layer: ", layer["type"])
             if layer["type"] == "linear":
                 linear_count += 1
                 self.layers.add_module("linear_" + str(linear_count), nn.Linear(layer["input"], layer["output"]))

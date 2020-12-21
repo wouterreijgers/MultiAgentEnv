@@ -12,8 +12,8 @@ from env.multi_prey_hunter import MultiPreyHunterEnv
 
 
 def env_creator(env_config):
-    #return MultiHunterEnv(env_config)
-    return MultiPreyHunterEnv(env_config)
+    return MultiHunterEnv(env_config)
+    #return MultiPreyHunterEnv(env_config)
 
 
 if __name__ == "__main__":

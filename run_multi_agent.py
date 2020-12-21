@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     env_config = {
         'num_hunters': 1,
-        'num_preys': 3,
+        'num_preys': 2,
         'training': True,
         'hunters': {
             'start_amount': 1,
@@ -39,8 +39,8 @@ if __name__ == "__main__":
             'birth_rate': 7,
             'max_age': 20},
         'sim': {
-            'width': 20,
-            'height': 20}
+            'width': 10,
+            'height': 10}
     }
     policy_config = {
         "hunter_policy_config": {
@@ -54,12 +54,12 @@ if __name__ == "__main__":
             ########################################
             # Parameters Agent
             ########################################
-            "lr": 0.0005,
+            "lr": 0.00005,
             # "lr": tune.grid_search([5e-3, 2e-3, 1e-3, 5e-4]),
-            "gamma": 0.985,
+            "gamma": 0.99995,
             #"gamma": tune.grid_search([0.9983, 0.9985, 0.9986, 0.9987, 0.988, 0.989]),
             "epsilon": 1,
-            "epsilon_decay": 0.99998,
+            "epsilon_decay": 0.9998,
             "epsilon_min": 0.01,
             "buffer_size": 20000,
             "batch_size": 2000,
@@ -167,9 +167,9 @@ if __name__ == "__main__":
             ########################################
             # Parameters Agent
             ########################################
-            # "lr": 0.001,
+            #"lr": 0.001,
             # #"lr": tune.grid_search([5e-3, 2e-3, 1e-3, 5e-4]),
-            # #"gamma": 0.989,
+            #"gamma": 0.989,
             # "gamma": tune.grid_search([0.988, 0.989, 0.990, 0.992, 0.994, ]),
             "epsilon": 1,
             "epsilon_decay": 0.998,

@@ -18,8 +18,8 @@ class DQNHunterPolicy(Policy):
         self.config = config
         self.action_shape = action_space.n
 
-        self.training = self.config['training']
-        print("hunter policy training: ", self.training)
+        self.training = True
+        #print("hunter policy training: ", self.training)
         # GPU settings
         self.use_cuda = torch.cuda.is_available()
         self.device = torch.device("cuda" if self.use_cuda else "cpu")
@@ -101,6 +101,7 @@ class DQNHunterPolicy(Policy):
         #     return {"learner_stats": {"loss": 0, "epsilon": mean(epsilon_log), "buffer_size": len(self.memory)}}
         #samples = self.sample_from_memory()
 
+        #print(self.lr)
         obs_batch_t = torch.tensor(np.array(samples["obs"])).to(self.device, non_blocking=True).type(self.dtype_f)
         next_obs_batch_t = torch.tensor(np.array(samples["new_obs"])).to(self.device, non_blocking=True).type(
             self.dtype_f)

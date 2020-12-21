@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     # Settings
     #folder = "/home/wouter/ray_results/DQNAlgorithm_2020-12-20_09-56-04/DQNAlgorithm_MultiHunterEnv-v0_93162_00000_0_2020-12-20_09-56-04"
-    folder = "/home/wouter/ray_results/DQNAlgorithm_2020-12-20_13-45-51/DQNAlgorithm_MultiHunterEnv-v0_ac451_00000_0_2020-12-20_13-45-51"
+    folder = "/home/wouter/ray_results/DQNAlgorithm_2020-12-20_14-20-09/DQNAlgorithm_MultiHunterEnv-v0_7738c_00000_0_2020-12-20_14-20-09"
     env_name = "MultiHunterEnv-v0"
     #checkpoint = 100
     checkpoint = 100
@@ -88,10 +88,10 @@ if __name__ == "__main__":
             ########################################
             # Parameters Agent
             ########################################
-            "lr": 4e-3,
+            "lr": 0.0005,
             # "lr": tune.grid_search([5e-3, 2e-3, 1e-3, 5e-4]),
             "gamma": 0.985,
-            # "gamma": tune.grid_search([0.983, 0.985, 0.986, 0.987, 0.988, 0.989]),
+            #"gamma": tune.grid_search([0.9983, 0.9985, 0.9986, 0.9987, 0.988, 0.989]),
             "epsilon": 1,
             "epsilon_decay": 0.99998,
             "epsilon_min": 0.01,
@@ -101,6 +101,36 @@ if __name__ == "__main__":
             "dqn_model": {
                 "custom_model": "DQNHunterModel",
                 "custom_model_config": {
+                    "layers": [
+                        {
+                            "type": "linear",
+                            "input": 4,
+                            "output": 32
+                        },
+                        {
+                            "type": "relu"
+                        },
+                        {
+                            "type": "linear",
+                            "input": 32,
+                            "output": 64
+                        },
+                        {
+                            "type": "relu"
+                        },
+                        {
+                            "type": "linear",
+                            "input": 64,
+                            "output": 32
+                        },
+                        {
+                            "type": "relu"
+                        },
+                        {
+                            "type": "linear",
+                            "input": 32,
+                            "output": 5
+                        }, ],
                     "network_size": [32, 64, 128, 64, 32],
                 },  # extra options to pass to your model
             },
