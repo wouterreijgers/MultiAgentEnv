@@ -18,7 +18,7 @@ class DQNHunterPolicy(Policy):
         self.config = config
         self.action_shape = action_space.n
 
-        self.training = True
+        self.training = False
         #print("hunter policy training: ", self.training)
         # GPU settings
         self.use_cuda = torch.cuda.is_available()
@@ -76,17 +76,17 @@ class DQNHunterPolicy(Policy):
         epsilon_log = []
         #print(self.epsilon)
         #if self.training:
-        for index in range(len(action_batch_t)):
-            self.epsilon *= self.epsilon_decay
-            if self.epsilon < self.epsilon_min:
-                self.epsilon = self.epsilon_min
-            epsilon_log.append(self.epsilon)
-            if np.random.random() < self.epsilon:
-                action_batch_t[index] = random.randint(0, self.action_shape - 1)
+        #for index in range(len(action_batch_t)):
+        #    self.epsilon *= self.epsilon_decay
+        #    if self.epsilon < self.epsilon_min:
+        #        self.epsilon = self.epsilon_min
+        #    epsilon_log.append(self.epsilon)
+        #    if np.random.random() < self.epsilon:
+        #        action_batch_t[index] = random.randint(0, self.action_shape - 1)
         # else:
-        #     for index in range(len(action_batch_t)):
-        #         epsilon_log.append(self.epsilon)
-        #         action_batch_t[index] = random.randint(0, self.action_shape - 1)
+        for index in range(len(action_batch_t)):
+            epsilon_log.append(self.epsilon)
+            action_batch_t[index] = random.randint(0, self.action_shape - 1)
 
         action = action_batch_t.cpu().detach().tolist()
 

@@ -44,7 +44,7 @@ if __name__ == "__main__":
     }
     policy_config = {
         "hunter_policy_config": {
-            "training": True,
+            "training": False,
             "num_gpus": 0,
             "num_workers": 1,
             "framework": "torch",
