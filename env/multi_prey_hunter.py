@@ -137,7 +137,6 @@ class MultiPreyHunterEnv(MultiAgentEnv):
             new one. after creation they also get added to all the lists needed.
             """
             if info[i]["reproduce"] and amount_of_hunters_living > 0 and not done[i]:
-                # TODO: the indexing of the prey's is wrong -> some are double
                 if self.agents[self.index_map[i]].type == "hunter":
                     if len(self.hunter_wait) > 0:
                         self.agents.append(self.hunter_wait.pop())
