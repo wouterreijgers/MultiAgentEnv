@@ -27,10 +27,10 @@ if __name__ == "__main__":
 
     # Settings
     #folder = "/home/wouter/ray_results/DQNAlgorithm_2020-12-20_09-56-04/DQNAlgorithm_MultiHunterEnv-v0_93162_00000_0_2020-12-20_09-56-04"
-    folder = "/home/wouter/ray_results/DQNAlgorithm_2020-12-20_14-20-09/DQNAlgorithm_MultiHunterEnv-v0_7738c_00000_0_2020-12-20_14-20-09"
+    folder = "/home/wouter/ray_results/DQNAlgorithm_2020-12-23_09-53-54/DQNAlgorithm_MultiHunterEnv-v0_c44d1_00000_0_2020-12-23_09-53-54"
     env_name = "MultiHunterEnv-v0"
     #checkpoint = 100
-    checkpoint = 100
+    checkpoint = 200
     num_episodes = 1
 
     # Def env
@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     env_config = {
         'num_hunters': 1,
-        'num_preys': 3,
+        'num_preys': 1,
         'training': False,
         'hunters': {
             'start_amount': 1,
@@ -52,11 +52,11 @@ if __name__ == "__main__":
             'max_age': 20, },
         'preys': {
             'start_amount': 1,
-            'birth_rate': 7,
+            'birth_rate': 0,
             'max_age': 20},
         'sim': {
-            'width': 20,
-            'height': 20}
+            'width': 10,
+            'height': 10}
     }
 
     # test_env = MultiPreyHunterEnv(env_config)
@@ -101,37 +101,37 @@ if __name__ == "__main__":
             "dqn_model": {
                 "custom_model": "DQNHunterModel",
                 "custom_model_config": {
-                    "layers": [
-                        {
-                            "type": "linear",
-                            "input": 4,
-                            "output": 32
-                        },
-                        {
-                            "type": "relu"
-                        },
-                        {
-                            "type": "linear",
-                            "input": 32,
-                            "output": 64
-                        },
-                        {
-                            "type": "relu"
-                        },
-                        {
-                            "type": "linear",
-                            "input": 64,
-                            "output": 32
-                        },
-                        {
-                            "type": "relu"
-                        },
-                        {
-                            "type": "linear",
-                            "input": 32,
-                            "output": 5
-                        }, ],
-                    "network_size": [32, 64, 128, 64, 32],
+                    # "layers": [
+                    #     {
+                    #         "type": "linear",
+                    #         "input": 4,
+                    #         "output": 32
+                    #     },
+                    #     {
+                    #         "type": "relu"
+                    #     },
+                    #     {
+                    #         "type": "linear",
+                    #         "input": 32,
+                    #         "output": 64
+                    #     },
+                    #     {
+                    #         "type": "relu"
+                    #     },
+                    #     {
+                    #         "type": "linear",
+                    #         "input": 64,
+                    #         "output": 32
+                    #     },
+                    #     {
+                    #         "type": "relu"
+                    #     },
+                    #     {
+                    #         "type": "linear",
+                    #         "input": 32,
+                    #         "output": 5
+                    #     }, ],
+                    "network_size": [32, 64, 32],
                 },  # extra options to pass to your model
             },
         },
@@ -212,7 +212,7 @@ if __name__ == "__main__":
             step += 1
             time.sleep(2)
             test_env.render()
-            #print(observation)
+            print(observation)
             action = {}
             for i, obs in observation.items():
                 if step>1:
@@ -221,6 +221,7 @@ if __name__ == "__main__":
                 else:
                     action[i] = trainer.get_policy(policy_mapping_fn(i)).compute_actions([obs], [])[0][0]
             #action, _, _ = trainer.get_policy().compute_actions([observation], [])
+            print(action)
             observation, reward, dones, info = test_env.step(action)
             for i, rew in reward.items():
                 if not dones[i]:
@@ -231,11 +232,10 @@ if __name__ == "__main__":
             total_reward += hunter_reward + prey_reward
 
             #print(prey_reward)
-
+            print('avg reward after {} episodes {}'.format(avg_reward / num_episodes, num_episodes))
             if dones['__all__']:
                 done = True
                 test_env.render()
         avg_reward += total_reward
-    print('avg reward after {} episodes {}'.format(avg_reward / num_episodes, num_episodes))
     test_env.close()
     del trainer

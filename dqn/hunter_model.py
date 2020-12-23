@@ -1,3 +1,4 @@
+from ray.rllib.train import torch
 from torch import nn, cat
 from ray.rllib.utils.annotations import override
 from ray.rllib.models.torch.torch_modelv2 import TorchModelV2
@@ -16,25 +17,23 @@ class DQNHunterModel(nn.Module, TorchModelV2):
         self.action_space = action_space
         self.model_config = model_config
         self.name = name
+        self.network_size = model_config["custom_model_config"]["network_size"]
 
         if isinstance(self.obs_space, Box):
             self.obs_shape = obs_space.shape[0]
         else:
             self.obs_shape = self.obs_space
 
-        self.layer_config = model_config["custom_model_config"]["layers"]
         self.layers = nn.Sequential()
-        linear_count = 0
-        relu_count = 0
-        for layer in self.layer_config:
-            print("layer: ", layer["type"])
-            if layer["type"] == "linear":
-                linear_count += 1
-                self.layers.add_module("linear_" + str(linear_count), nn.Linear(layer["input"], layer["output"]))
-            elif layer["type"] == "relu":
-                relu_count += 1
-                self.layers.add_module("relu_" + str(relu_count), nn.ReLU())
-        
+        last_size = self.obs_space.shape[0]
+        i = 0
+        for layer_size in self.network_size:
+            self.layers.add_module("linear_{}".format(i), nn.Linear(last_size, layer_size))
+            self.layers.add_module("relu_{}".format(i), nn.ReLU())
+            last_size = layer_size
+            i += 1
+        self.layers.add_module("linear_{}".format(i), nn.Linear(last_size, num_outputs))
+
     @override(TorchModelV2)
     def forward(self, obs):
         return self.layers(obs)

@@ -83,6 +83,7 @@ class HunterEnv:
         age, energy, x_to_prey, y_to_prey = self.state
         reproduce = False
 
+        # print(self.x, self.y)
         # cost of living
         age += 1
         energy -= 1
@@ -90,41 +91,49 @@ class HunterEnv:
         reward = 0
 
         # perform the action
-        #if energy >= self.energy_to_reproduce + 1:
+        # if energy >= self.energy_to_reproduce + 1:
         if action == 0:
-            if energy >= self.energy_to_reproduce+1:
+            if energy >= self.energy_to_reproduce + 1:
                 energy -= self.energy_to_reproduce
-                reward += .2
+                # reward += 10
                 reproduce = True
-            else:
-                reward -=.2
-        if action == 1 and self.y < self.height - 2:
-            self.y += 1
+            # else:
+            #     reward -= 1
+        if action == 1 and self.y > self.height - 2:
+            self.y -= 1
         if action == 2 and self.x < self.width - 2:
             self.x += 1
-        if action == 3 and self.y > 0:
-            self.y -= 1
+        if action == 3 and self.y < 0:
+            self.y += 1
         if action == 4 and self.x > 0:
             self.x -= 1
 
         # find closest prey and 'eat' if close enough
         x_to_prey, y_to_prey = dist_to_prey[0], dist_to_prey[1]  # self.preys.get_rel_x_y([self.x, self.y])
-        if (abs(x_to_prey) + abs(y_to_prey)) <=1:
-            reward += .1
+        if (abs(x_to_prey) + abs(y_to_prey)) <= 1:
+            reward += 1
             energy += self.energy_per_prey_eaten
+            if energy > 100:
+                energy = 100
+        # else:
+        #
+        #     reward = 100 - (abs(x_to_prey.item()) + abs(y_to_prey).item())
+        # else:
+        #     reward -= (abs(x_to_prey) + abs(y_to_prey))/200
 
+        #self.state = (age, energy, abs(x_to_prey), abs(y_to_prey))
         self.state = (age, energy, x_to_prey, y_to_prey)
         self.done = bool(
             age >= self.max_age
             or energy <= 0
         )
 
-        # if not self.done:
-        #     #reward += 1
-        if self.steps_beyond_done is None:
-            # Hunter just died
+        if not self.done:
+            reward += 1
+            # print("received life bonus", reward)
+        elif self.steps_beyond_done is None:
+            # print("I'm here: ", reward)
             self.steps_beyond_done = 0
-            # reward += 1.0
         else:
             if self.steps_beyond_done == 0:
                 logger.warn(
@@ -135,7 +144,8 @@ class HunterEnv:
                 )
             self.steps_beyond_done += 1
             reward = 0.0
-
+            # print("I'm now here: ", reward)
+        # print(reward)
         return np.array(self.state), reward, self.done, {"reproduce": reproduce}
 
     def reset(self):
@@ -144,7 +154,7 @@ class HunterEnv:
         self.x = self.state[2]
         self.y = self.state[3]
         self.steps_beyond_done = None
-        #print("reset hunter ", self.state)
+        # print("reset hunter ", self.state)
         return np.array(self.state)
 
     def get_position(self):

@@ -69,6 +69,7 @@ class PreyEnv():
         # cost of living
         age += 1
 
+        reward = 0
         # perform the action
         birth_probability = random.randint(0, 100)
         #print(birth_probability)
@@ -93,10 +94,10 @@ class PreyEnv():
         )
 
         if not self.done:
-            reward = 1
+            reward += 1
         elif self.steps_beyond_done is None:
             self.steps_beyond_done = 0
-            reward = 1.0
+            reproduce = True
         else:
             if self.steps_beyond_done == 0:
                 logger.warn(
@@ -106,8 +107,8 @@ class PreyEnv():
                     "True' -- any further steps are undefined behavior."
                 )
             self.steps_beyond_done += 1
-        #THis is to test something
-        reward = 0.0
+            #THis is to test something
+            reward = 0.0
 
         return np.array(self.state), reward, self.done, {"reproduce": reproduce}
 

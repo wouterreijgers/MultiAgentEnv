@@ -26,6 +26,12 @@ class MultiHunterEnv(MultiAgentEnv):
         return {i: a.reset() for i, a in enumerate(self.agents)}
 
     def step(self, action_dict):
+        """
+        Make the agents perform a step, notice that first we let the preys take steps
+        :param action_dict:
+        :return:
+        """
+
         obs, rew, done, info = {}, {}, {}, {}
         for i, action in action_dict.items():
             dist_x = random.randint(0, 20)

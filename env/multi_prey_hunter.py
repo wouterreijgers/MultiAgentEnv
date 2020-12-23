@@ -87,6 +87,8 @@ class MultiPreyHunterEnv(MultiAgentEnv):
         amount_of_preys_living = 0
         amount_of_hunters_total = 0
         amount_of_preys_total = 0
+
+        team_reward_hunter = 0
         """
         Find the positions of every living agent, these are needed in order to calculate the closest prey/hunter
         """
@@ -114,7 +116,7 @@ class MultiPreyHunterEnv(MultiAgentEnv):
         """
         Find the closest prey/hunter and perform the 'step' function in the HunterEnv and PreyEnv
         """
-        # print(action_dict)
+        #print(action_dict)
         obs, rew, done, info = {}, {}, {}, {}
         for i, action in action_dict.items():
             dist = [self.config["sim"]["width"], self.config["sim"]["height"]]
@@ -125,8 +127,8 @@ class MultiPreyHunterEnv(MultiAgentEnv):
             if "prey" in i and amount_of_hunters_living > 0:
                 dist = find_closest(self.agents[self.index_map[i]].get_position(), hunter_loc)
             obs[i], rew[i], done[i], info[i] = self.agents[self.index_map[i]].step(action, dist)
-            if "prey" in i:
-                rew[i] =0
+            # if "prey" in i:
+            #     rew[i] = 0
             if amount_of_hunters_living == 0:
                 done[i] = True
             if done[i]:
@@ -136,7 +138,7 @@ class MultiPreyHunterEnv(MultiAgentEnv):
             Reproduce if the action allows it. First check if there are objects that can be reused, else make a 
             new one. after creation they also get added to all the lists needed.
             """
-            if info[i]["reproduce"] and amount_of_hunters_living > 0 and not done[i]:
+            if info[i]["reproduce"] and amount_of_hunters_living > 0: #and not done[i]:
                 if self.agents[self.index_map[i]].type == "hunter":
                     if len(self.hunter_wait) > 0:
                         self.agents.append(self.hunter_wait.pop())
@@ -147,6 +149,7 @@ class MultiPreyHunterEnv(MultiAgentEnv):
                     while id in self.index_map:
                         n += 1
                         id = self.agents[len(self.agents) - 1].type + "_" + str(amount_of_preys_total + n)
+                    amount_of_hunters_living += 1
                     amount_of_hunters_total += 1
                 elif self.agents[self.index_map[i]].type == "prey":
                     # print("new_prey", amount_of_preys_total)
@@ -167,14 +170,28 @@ class MultiPreyHunterEnv(MultiAgentEnv):
                 rew[id] = 1
                 done[id] = False
                 info[id] = {}
+                rew[i] = amount_of_hunters_living + amount_of_preys_living
+
                 # print(obs)
-            if "hunter" in i:
-                rew[i] = amount_of_hunters_living
+            # if "hunter" in i:
+                # rew[i] += amount_of_hunters_living
+            #     #team_reward_hunter *= rew[i]
+            # if "prey" in i:
+            #     rew[i] = 0
 
 
         """
         Check if there are still some hunters, if not all the preys need to be killed otherwise it creates an error.
         """
+        # for i, a in rew.items():
+        #     if "hunter" in i:
+        #         a = team_reward_hunter
+        print(rew)
+        #print(obs)
+        #print(rew)
+        # for i, obs in obs.items():
+        #     if "prey" in i and rew[i]>0:
+        #         print(i, " heeft een reward ", rew[i])
         if amount_of_hunters_living == 0:
             for agent in self.agents:
                 agent.done = True

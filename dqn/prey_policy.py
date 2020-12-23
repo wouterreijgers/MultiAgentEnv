@@ -18,7 +18,7 @@ class DQNPreyPolicy(Policy):
         self.config = config
         self.action_shape = action_space.n
 
-        self.training = False
+        self.training = self.config["training"]
         print("prey policy training: ", self.training)
 
 
