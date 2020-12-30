@@ -48,7 +48,7 @@ class MultiPreyHunterEnv(MultiAgentEnv):
         for i in range(num):
             self.agents.append(PreyEnv(config))
             self.index_map[self.agents[len(self.agents) - 1].type + "_" + str(i)] = len(self.agents) - 1
-        self.observation_space_prey = self.agents[config["num_hunters"]].observation_space
+        self.observation_space_prey = self.agents[num].observation_space
         self.action_space_prey = self.agents[config["num_hunters"]].action_space
         self.reset_index_map = self.index_map.copy()
 
@@ -170,14 +170,14 @@ class MultiPreyHunterEnv(MultiAgentEnv):
                 rew[id] = 1
                 done[id] = False
                 info[id] = {}
-                rew[i] = amount_of_hunters_living + amount_of_preys_living
 
                 # print(obs)
-            # if "hunter" in i:
-                # rew[i] += amount_of_hunters_living
+            if "hunter" in i:
+                rew[i] += pow(amount_of_hunters_living, 1.2)
             #     #team_reward_hunter *= rew[i]
             # if "prey" in i:
             #     rew[i] = 0
+
 
 
         """
@@ -186,9 +186,10 @@ class MultiPreyHunterEnv(MultiAgentEnv):
         # for i, a in rew.items():
         #     if "hunter" in i:
         #         a = team_reward_hunter
-        print(rew)
         #print(obs)
         #print(rew)
+        #print("Hunters: ", amount_of_hunters_living)
+        #print("Preys: ", amount_of_preys_living)
         # for i, obs in obs.items():
         #     if "prey" in i and rew[i]>0:
         #         print(i, " heeft een reward ", rew[i])

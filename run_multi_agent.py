@@ -1,3 +1,5 @@
+import time
+
 import ray
 import os
 from ray import tune
@@ -26,17 +28,17 @@ if __name__ == "__main__":
     ModelCatalog.register_custom_model("DQNHunterModel", DQNHunterModel)
 
     env_config = {
-        'num_hunters': 1,
-        'num_preys': 2,
+        'num_hunters': 5,
+        'num_preys': 10,
         'training': True,
         'hunters': {
-            'start_amount': 1,
+            'start_amount': 5,
             'energy_to_reproduce': 30,
             'energy_per_prey_eaten': 10,
             'max_age': 20, },
         'preys': {
-            'start_amount': 2,
-            'birth_rate': 0,
+            'start_amount': 10,
+            'birth_rate': 7,
             'max_age': 20},
         'sim': {
             'width': 10,
@@ -67,7 +69,7 @@ if __name__ == "__main__":
             "dqn_model": {
                 "custom_model": "DQNHunterModel",
                 "custom_model_config": {
-                    "network_size": [32, 64, 32],
+                    "network_size": [32, 64, 128, 64, 32],
                 },  # extra options to pass to your model
             },
         },
@@ -148,11 +150,16 @@ if __name__ == "__main__":
             "policies_to_train": policies
         },
     }
-
-    tune.run(
-        DQNTrainer,
-        # checkpoint_freq=10,
-        checkpoint_at_end=True,
-        stop={"timesteps_total": 40000},
-        config=config,
-    )
+    times = {}
+    for i in range(20):
+        timeBefore = time.time()
+        tune.run(
+            DQNTrainer,
+            # checkpoint_freq=10,
+            checkpoint_at_end=True,
+            stop={"timesteps_total": i*10000},
+            config=config,
+        )
+        timeAfter = time.time()
+        times[i*10000] = timeAfter - timeBefore
+    print("Total time taken: ", times)

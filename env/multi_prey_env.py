@@ -26,4 +26,9 @@ class MultiPreyEnv(MultiAgentEnv):
         done["__all__"] = len(self.dones) == len(self.agents)
         return obs, rew, done, info
 
+    def get_pos(self):
+        loc = [        ]
+        for agent in self.agents:
+            loc.append(agent.get_position())
+        return loc
 

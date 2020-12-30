@@ -1,3 +1,4 @@
+from ray.rllib.train import torch
 from torch import nn, cat
 from ray.rllib.utils.annotations import override
 from ray.rllib.models.torch.torch_modelv2 import TorchModelV2
@@ -32,8 +33,7 @@ class DQNModel(nn.Module, TorchModelV2):
             last_size = layer_size
             i += 1
         self.layers.add_module("linear_{}".format(i), nn.Linear(last_size, num_outputs))
-        
+
     @override(TorchModelV2)
     def forward(self, obs):
-        print("DQNMODEL IS DEPRACATED")
         return self.layers(obs)

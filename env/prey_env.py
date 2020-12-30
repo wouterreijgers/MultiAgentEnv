@@ -97,7 +97,6 @@ class PreyEnv():
             reward += 1
         elif self.steps_beyond_done is None:
             self.steps_beyond_done = 0
-            reproduce = True
         else:
             if self.steps_beyond_done == 0:
                 logger.warn(
@@ -107,7 +106,6 @@ class PreyEnv():
                     "True' -- any further steps are undefined behavior."
                 )
             self.steps_beyond_done += 1
-            #THis is to test something
             reward = 0.0
 
         return np.array(self.state), reward, self.done, {"reproduce": reproduce}

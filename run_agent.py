@@ -21,20 +21,20 @@ if __name__ == "__main__":
     ModelCatalog.register_custom_model("DQNModel", DQNModel)
 
     env_config = {
-        'num_hunters': 20,
-        'num_preys': 100,
+        'num_hunters': 1,
+        'num_preys': 1,
         'hunters': {
-            'start_amount': 20,
+            'start_amount': 1,
             'energy_to_reproduce': 30,
             'energy_per_prey_eaten': 10,
             'max_age': 20, },
         'preys': {
-            'start_amount': 100,
-            'birth_rate': 17,
+            'start_amount': 1,
+            'birth_rate': 1,
             'max_age': 20},
         'sim': {
-            'width': 200,
-            'height': 200}
+            'width': 10,
+            'height': 10}
     }
 
     env = register_env("MultiHunterEnv-v0", env_creator)

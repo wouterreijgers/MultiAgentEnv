@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     # Settings
     #folder = "/home/wouter/ray_results/DQNAlgorithm_2020-12-20_09-56-04/DQNAlgorithm_MultiHunterEnv-v0_93162_00000_0_2020-12-20_09-56-04"
-    folder = "/home/wouter/ray_results/DQNAlgorithm_2020-12-23_09-53-54/DQNAlgorithm_MultiHunterEnv-v0_c44d1_00000_0_2020-12-23_09-53-54"
+    folder = "/home/wouter/ray_results/DQNAlgorithm_2020-12-28_20-05-03/DQNAlgorithm_MultiHunterEnv-v0_f947b_00000_0_2020-12-28_20-05-03"
     env_name = "MultiHunterEnv-v0"
     #checkpoint = 100
     checkpoint = 200
@@ -42,8 +42,8 @@ if __name__ == "__main__":
     ModelCatalog.register_custom_model("DQNHunterModel", DQNHunterModel)
 
     env_config = {
-        'num_hunters': 1,
-        'num_preys': 1,
+        'num_hunters': 10,
+        'num_preys': 20,
         'training': False,
         'hunters': {
             'start_amount': 1,
@@ -51,8 +51,8 @@ if __name__ == "__main__":
             'energy_per_prey_eaten': 10,
             'max_age': 20, },
         'preys': {
-            'start_amount': 1,
-            'birth_rate': 0,
+            'start_amount': 2,
+            'birth_rate': 5,
             'max_age': 20},
         'sim': {
             'width': 10,

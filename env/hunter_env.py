@@ -95,7 +95,7 @@ class HunterEnv:
         if action == 0:
             if energy >= self.energy_to_reproduce + 1:
                 energy -= self.energy_to_reproduce
-                # reward += 10
+                reward += 20
                 reproduce = True
             # else:
             #     reward -= 1
@@ -107,11 +107,11 @@ class HunterEnv:
             self.y += 1
         if action == 4 and self.x > 0:
             self.x -= 1
-
+        # reward += energy/10
         # find closest prey and 'eat' if close enough
         x_to_prey, y_to_prey = dist_to_prey[0], dist_to_prey[1]  # self.preys.get_rel_x_y([self.x, self.y])
         if (abs(x_to_prey) + abs(y_to_prey)) <= 1:
-            reward += 1
+            reward += 10
             energy += self.energy_per_prey_eaten
             if energy > 100:
                 energy = 100
