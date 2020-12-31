@@ -118,13 +118,11 @@ class DQNHunterPolicy(Policy):
         expected_q_value_batch_t = expected_q_value_batch_t.detach()
 
         loss_t = self.MSE_loss_fn(q_value_batch_t, expected_q_value_batch_t)
-        #print(q_value_batch_t, expected_q_value_batch_t)
-        #print(loss_t)
+
 
         self.optimizer.zero_grad()
         loss_t.backward()
         self.optimizer.step()
-        #print(self.get_weights())
         return {"learner_stats": {"loss": "loss_t.cpu().item()", "epsilon": mean(epsilon_log),
                                   "buffer_size": len(self.memory)}}
 

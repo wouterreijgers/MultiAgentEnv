@@ -55,7 +55,7 @@ class MultiPreyHunterEnv(MultiAgentEnv):
         self.hunter_wait = []
         self.prey_wait = []
         self.training = config['training']
-        #print(self.training)
+
         # Build the visual simulation
         if not self.training:
             self.simulator = Simulation(config)
@@ -63,7 +63,6 @@ class MultiPreyHunterEnv(MultiAgentEnv):
             self.episode_end = False
 
     def reset(self):
-        #print("reset")
         self.dones = set()
         self.time = 0
         self.episode_end = False
@@ -77,10 +76,9 @@ class MultiPreyHunterEnv(MultiAgentEnv):
         return {i: self.agents[a].reset() for i, a in self.reset_index_map.items()}
 
     def step(self, action_dict):
-        #print("step")
         self.time += 1
         self.action_dict_copy = action_dict.copy()
-        # print(action_dict)
+
         hunter_loc = None
         prey_loc = None
         amount_of_hunters_living = 0
@@ -92,7 +90,6 @@ class MultiPreyHunterEnv(MultiAgentEnv):
         """
         Find the positions of every living agent, these are needed in order to calculate the closest prey/hunter
         """
-        #print(self.agents, self.index_map)
         for i, action in action_dict.items():
             if self.agents[self.index_map[i]].type == "hunter":
                 amount_of_hunters_total += 1
@@ -116,7 +113,6 @@ class MultiPreyHunterEnv(MultiAgentEnv):
         """
         Find the closest prey/hunter and perform the 'step' function in the HunterEnv and PreyEnv
         """
-        #print(action_dict)
         obs, rew, done, info = {}, {}, {}, {}
         for i, action in action_dict.items():
             dist = [self.config["sim"]["width"], self.config["sim"]["height"]]
@@ -171,7 +167,7 @@ class MultiPreyHunterEnv(MultiAgentEnv):
                 done[id] = False
                 info[id] = {}
 
-                # print(obs)
+            # Here we tried to use different reward functions.
             if "hunter" in i:
                 rew[i] += pow(amount_of_hunters_living, 1.2)
             #     #team_reward_hunter *= rew[i]
@@ -183,22 +179,12 @@ class MultiPreyHunterEnv(MultiAgentEnv):
         """
         Check if there are still some hunters, if not all the preys need to be killed otherwise it creates an error.
         """
-        # for i, a in rew.items():
-        #     if "hunter" in i:
-        #         a = team_reward_hunter
-        #print(obs)
-        #print(rew)
-        #print("Hunters: ", amount_of_hunters_living)
-        #print("Preys: ", amount_of_preys_living)
-        # for i, obs in obs.items():
-        #     if "prey" in i and rew[i]>0:
-        #         print(i, " heeft een reward ", rew[i])
+
         if amount_of_hunters_living == 0:
             for agent in self.agents:
                 agent.done = True
         done["__all__"] = amount_of_hunters_living == 0
         self.episode_end = done["__all__"]
-        # print(obs)
         return obs, rew, done, info
 
     def render(self):

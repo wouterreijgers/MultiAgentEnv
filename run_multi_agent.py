@@ -150,16 +150,11 @@ if __name__ == "__main__":
             "policies_to_train": policies
         },
     }
-    times = {}
-    for i in range(20):
-        timeBefore = time.time()
-        tune.run(
-            DQNTrainer,
-            # checkpoint_freq=10,
-            checkpoint_at_end=True,
-            stop={"timesteps_total": i*10000},
-            config=config,
-        )
-        timeAfter = time.time()
-        times[i*10000] = timeAfter - timeBefore
-    print("Total time taken: ", times)
+
+    tune.run(
+        DQNTrainer,
+        # checkpoint_freq=10,
+        checkpoint_at_end=True,
+        stop={"timesteps_total": 40000},
+        config=config,
+    )
