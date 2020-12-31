@@ -27,10 +27,10 @@ if __name__ == "__main__":
 
     # Settings
     #folder = "/home/wouter/ray_results/DQNAlgorithm_2020-12-20_09-56-04/DQNAlgorithm_MultiHunterEnv-v0_93162_00000_0_2020-12-20_09-56-04"
-    folder = "/home/wouter/ray_results/DQNAlgorithm_2020-12-20_14-20-09/DQNAlgorithm_MultiHunterEnv-v0_7738c_00000_0_2020-12-20_14-20-09"
+    folder = "/home/wouter/ray_results/DQNAlgorithm_2020-12-31_17-05-15/DQNAlgorithm_MultiHunterEnv-v0_5a6e7_00000_0_2020-12-31_17-05-15"
     env_name = "MultiHunterEnv-v0"
     #checkpoint = 100
-    checkpoint = 100
+    checkpoint = 200
     num_episodes = 1
 
     # Def env
@@ -42,8 +42,8 @@ if __name__ == "__main__":
     ModelCatalog.register_custom_model("DQNHunterModel", DQNHunterModel)
 
     env_config = {
-        'num_hunters': 1,
-        'num_preys': 3,
+        'num_hunters': 2,
+        'num_preys': 10,
         'training': False,
         'hunters': {
             'start_amount': 1,
@@ -51,8 +51,8 @@ if __name__ == "__main__":
             'energy_per_prey_eaten': 10,
             'max_age': 20, },
         'preys': {
-            'start_amount': 1,
-            'birth_rate': 7,
+            'start_amount': 2,
+            'birth_rate': 5,
             'max_age': 20},
         'sim': {
             'width': 20,
@@ -88,49 +88,19 @@ if __name__ == "__main__":
             ########################################
             # Parameters Agent
             ########################################
-            "lr": 0.0005,
+            "lr": 4e-4,
             # "lr": tune.grid_search([5e-3, 2e-3, 1e-3, 5e-4]),
             "gamma": 0.985,
             #"gamma": tune.grid_search([0.9983, 0.9985, 0.9986, 0.9987, 0.988, 0.989]),
             "epsilon": 1,
-            "epsilon_decay": 0.99998,
-            "epsilon_min": 0.01,
+            "epsilon_decay": 0.9998,
+            "epsilon_min": 0.1,
             "buffer_size": 20000,
             "batch_size": 2000,
             "env_config": env_config,
             "dqn_model": {
                 "custom_model": "DQNHunterModel",
                 "custom_model_config": {
-                    "layers": [
-                        {
-                            "type": "linear",
-                            "input": 4,
-                            "output": 32
-                        },
-                        {
-                            "type": "relu"
-                        },
-                        {
-                            "type": "linear",
-                            "input": 32,
-                            "output": 64
-                        },
-                        {
-                            "type": "relu"
-                        },
-                        {
-                            "type": "linear",
-                            "input": 64,
-                            "output": 32
-                        },
-                        {
-                            "type": "relu"
-                        },
-                        {
-                            "type": "linear",
-                            "input": 32,
-                            "output": 5
-                        }, ],
                     "network_size": [32, 64, 128, 64, 32],
                 },  # extra options to pass to your model
             },
@@ -149,16 +119,16 @@ if __name__ == "__main__":
             "lr": 4e-3,
             # "lr": tune.grid_search([5e-3, 2e-3, 1e-3, 5e-4]),
             "gamma": 0.985,
-            # "gamma": tune.grid_search([0.983, 0.985, 0.986, 0.987, 0.988, 0.989]),
-            "epsilon": 1,
+            #"gamma": tune.grid_search([0.9983, 0.9985, 0.9986, 0.9987, 0.988, 0.989]),
+            "epsilon": .9,
             "epsilon_decay": 0.99998,
             "epsilon_min": 0.01,
-            "buffer_size": 20000,
             "batch_size": 2000,
             "env_config": env_config,
             "dqn_model": {
                 "custom_model": "DQNPreyModel",
                 "custom_model_config": {
+
                     "network_size": [32, 64, 128, 64, 32],
                 },  # extra options to pass to your model
             },
@@ -212,7 +182,7 @@ if __name__ == "__main__":
             step += 1
             time.sleep(2)
             test_env.render()
-            #print(observation)
+            print(observation)
             action = {}
             for i, obs in observation.items():
                 if step>1:
@@ -221,6 +191,7 @@ if __name__ == "__main__":
                 else:
                     action[i] = trainer.get_policy(policy_mapping_fn(i)).compute_actions([obs], [])[0][0]
             #action, _, _ = trainer.get_policy().compute_actions([observation], [])
+            print(action)
             observation, reward, dones, info = test_env.step(action)
             for i, rew in reward.items():
                 if not dones[i]:
@@ -231,11 +202,10 @@ if __name__ == "__main__":
             total_reward += hunter_reward + prey_reward
 
             #print(prey_reward)
-
+            print('avg reward after {} episodes {}'.format(avg_reward / num_episodes, num_episodes))
             if dones['__all__']:
                 done = True
                 test_env.render()
         avg_reward += total_reward
-    print('avg reward after {} episodes {}'.format(avg_reward / num_episodes, num_episodes))
     test_env.close()
     del trainer

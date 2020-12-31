@@ -19,7 +19,7 @@ class DQNHunterPolicy(Policy):
         self.action_shape = action_space.n
 
         self.training = self.config["training"]
-        #print("hunter policy training: ", self.training)
+        # print("hunter policy training: ", self.training)
         # GPU settings
         self.use_cuda = torch.cuda.is_available()
         self.device = torch.device("cuda" if self.use_cuda else "cpu")
@@ -38,7 +38,7 @@ class DQNHunterPolicy(Policy):
 
         print(self.config["gamma"])
 
-        self.gamma = torch.tensor(self.config["gamma"]).to(self.device, non_blocking=True)
+        self.gamma = torch.tensor(self.config["gamma"])#.to(self.device, non_blocking=True)
         self.batch_size = self.config["batch_size"]
 
         self.memory = deque(maxlen=self.config["buffer_size"])
@@ -53,7 +53,7 @@ class DQNHunterPolicy(Policy):
         ).to(self.device, non_blocking=True)
         self.MSE_loss_fn = MSELoss(reduction='mean')
         self.optimizer = torch.optim.Adam(self.dqn_model.parameters(), lr=self.lr)
-
+        #self.optimizer = torch.optim.SparseAdam(self.dqn_model.parameters(), lr=self.lr)
 
     def compute_actions(self,
                         obs_batch,
@@ -66,16 +66,16 @@ class DQNHunterPolicy(Policy):
                         timestep=None,
                         **kwargs):
         # Worker function
-        #print("hunter_policy_compute_actions")
+        # print("hunter_policy_compute_actions")
 
         # print("obs_batch", obs_batch)
         obs_batch_t = torch.tensor(obs_batch).type(self.dtype_f)
         q_value_batch_t = self.dqn_model(obs_batch_t)
+        #print(q_value_batch_t)
         action_batch_t = torch.argmax(q_value_batch_t, axis=1)
-
+        #print(action_batch_t)
         epsilon_log = []
-        #TODO: Epsilon is not changing?
-        #print(self.epsilon)
+        # print(self.epsilon)
         if self.training:
             for index in range(len(action_batch_t)):
                 self.epsilon *= self.epsilon_decay
@@ -83,26 +83,23 @@ class DQNHunterPolicy(Policy):
                     self.epsilon = self.epsilon_min
                 epsilon_log.append(self.epsilon)
                 if np.random.random() < self.epsilon:
+                    #print("Random")
                     action_batch_t[index] = random.randint(0, self.action_shape - 1)
+                # else:
+                #     #print("     not Random")
         else:
             for index in range(len(action_batch_t)):
                 epsilon_log.append(self.epsilon)
                 action_batch_t[index] = random.randint(0, self.action_shape - 1)
-
         action = action_batch_t.cpu().detach().tolist()
+        #print("action taken: ", action)
 
         return action, [], {"epsilon_log": epsilon_log}
 
     def learn_on_batch(self, samples):
-        #print(samples)
-        # Trainer function
-        epsilon_log = samples["epsilon_log"]
-        #self.remember(samples)
-        # if len(self.memory) < self.batch_size:
-        #     return {"learner_stats": {"loss": 0, "epsilon": mean(epsilon_log), "buffer_size": len(self.memory)}}
-        #samples = self.sample_from_memory()
 
-        #print(self.lr)
+        epsilon_log = samples["epsilon_log"]
+
         obs_batch_t = torch.tensor(np.array(samples["obs"])).to(self.device, non_blocking=True).type(self.dtype_f)
         next_obs_batch_t = torch.tensor(np.array(samples["new_obs"])).to(self.device, non_blocking=True).type(
             self.dtype_f)
@@ -115,20 +112,17 @@ class DQNHunterPolicy(Policy):
         q_value_batch_t = self.dqn_model(obs_batch_t).gather(1, actions_batch_t.unsqueeze(-1)).squeeze(-1)
         next_q_value_batch_t = self.dqn_model(next_obs_batch_t).max(1)[0].detach()
 
-
         next_q_value_batch_t[dones_batch_t] = 0.0
+
         expected_q_value_batch_t = rewards_batch_t + next_q_value_batch_t * self.gamma
         expected_q_value_batch_t = expected_q_value_batch_t.detach()
 
         loss_t = self.MSE_loss_fn(q_value_batch_t, expected_q_value_batch_t)
 
-        #print("stats:", self.gamma, self.lr, self.config["dqn_model"])
-        # Update networks
+
         self.optimizer.zero_grad()
         loss_t.backward()
         self.optimizer.step()
-        #print({"learner_stats": {"loss": "loss_t.cpu().item()", "epsilon": mean(epsilon_log),
-         #                         "buffer_size": len(self.memory)}})
         return {"learner_stats": {"loss": "loss_t.cpu().item()", "epsilon": mean(epsilon_log),
                                   "buffer_size": len(self.memory)}}
 

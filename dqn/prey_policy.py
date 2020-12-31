@@ -18,7 +18,7 @@ class DQNPreyPolicy(Policy):
         self.config = config
         self.action_shape = action_space.n
 
-        self.training = False
+        self.training = self.config["training"]
         print("prey policy training: ", self.training)
 
 
@@ -44,43 +44,13 @@ class DQNPreyPolicy(Policy):
         self.dqn_model = ModelCatalog.get_model_v2(
             obs_space=self.observation_space,
             action_space=self.action_space,
-            num_outputs=2,
+            num_outputs=4,
             name="DQNModel",
             model_config=self.config["dqn_model"],
             framework="torch",
         ).to(self.device, non_blocking=True)
         self.MSE_loss_fn = MSELoss(reduction='mean')
         self.optimizer = torch.optim.Adam(self.dqn_model.parameters(), lr=self.lr)
-
-    def remember(self, samples):
-        obs = samples["obs"]
-        new_obs = samples["new_obs"]
-        rewards = samples["rewards"]
-        actions = samples["actions"]
-        dones = samples["dones"]
-
-        batch = zip(obs, new_obs, rewards, actions, dones)
-        for obs_s, new_obs_s, rewards_s, actions_s, dones_s in batch:
-            self.memory.append([obs_s, new_obs_s, rewards_s, actions_s, dones_s])
-
-    def sample_from_memory(self):
-        batch = random.sample(self.memory, self.batch_size)
-        samples = {}
-        samples["obs"] = [None for _ in range(self.batch_size)]
-        samples["new_obs"] = [None for _ in range(self.batch_size)]
-        samples["rewards"] = [None for _ in range(self.batch_size)]
-        samples["actions"] = [None for _ in range(self.batch_size)]
-        samples["dones"] = [None for _ in range(self.batch_size)]
-
-        i = 0
-        for sample in batch:
-            samples["obs"][i] = sample[0]
-            samples["new_obs"][i] = sample[1]
-            samples["rewards"][i] = sample[2]
-            samples["actions"][i] = sample[3]
-            samples["dones"][i] = sample[4]
-            i += 1
-        return samples
 
     def compute_actions(self,
                         obs_batch,
@@ -119,10 +89,6 @@ class DQNPreyPolicy(Policy):
         # Trainer function
 
         epsilon_log = samples["epsilon_log"]
-        self.remember(samples)
-        if len(self.memory) < self.batch_size:
-            return {"learner_stats": {"loss": 0, "epsilon": mean(epsilon_log), "buffer_size": len(self.memory)}}
-        samples = self.sample_from_memory()
 
         obs_batch_t = torch.tensor(np.array(samples["obs"])).to(self.device, non_blocking=True).type(self.dtype_f)
         next_obs_batch_t = torch.tensor(np.array(samples["new_obs"])).to(self.device, non_blocking=True).type(
@@ -133,21 +99,18 @@ class DQNPreyPolicy(Policy):
             self.dtype_l)
         dones_batch_t = torch.tensor(np.array(samples["dones"])).to(self.device, non_blocking=True).type(self.dtype_b)
 
-        # q_value_batch_t = self.dqn_model(obs_batch_t).gather(1, actions_batch_t.unsqueeze(-1)).squeeze(-1)
-        # next_q_value_batch_t = self.dqn_model(next_obs_batch_t).max(1)[0].detach()
+        q_value_batch_t = self.dqn_model(obs_batch_t).gather(1, actions_batch_t.unsqueeze(-1)).squeeze(-1)
+        next_q_value_batch_t = self.dqn_model(next_obs_batch_t).max(1)[0].detach()
 
-        # next_q_value_batch_t[dones_batch_t] = 0.0
-        # expected_q_value_batch_t = rewards_batch_t + next_q_value_batch_t * self.gamma
-        # expected_q_value_batch_t = expected_q_value_batch_t.detach()
-        #
-        # loss_t = self.MSE_loss_fn(q_value_batch_t, expected_q_value_batch_t)
+        next_q_value_batch_t[dones_batch_t] = 0.0
+        expected_q_value_batch_t = rewards_batch_t + next_q_value_batch_t * self.gamma
+        expected_q_value_batch_t = expected_q_value_batch_t.detach()
 
-        # TODO: write learning function
+        loss_t = self.MSE_loss_fn(q_value_batch_t, expected_q_value_batch_t)
 
-        # Update networks
-        # self.optimizer.zero_grad()
-        # loss_t.backward()
-        # self.optimizer.step()
+        self.optimizer.zero_grad()
+        loss_t.backward()
+        self.optimizer.step()
         return {"learner_stats": {"loss": "loss_t.cpu().item()", "epsilon": mean(epsilon_log),
                                   "buffer_size": len(self.memory)}}
 
